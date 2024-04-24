@@ -17,7 +17,7 @@ public:
     virtual char read_char() = 0;
     virtual int read_int() = 0;
     virtual long read_long() = 0;
-    // virtual long long read_llong() = 0;
+    virtual long long read_llong() = 0;
     // virtual std::string read_word() = 0;
     // virtual std::string read_line() = 0;
 };
@@ -45,11 +45,13 @@ public:
 
 class StringReader : public IOString, public Reader {
     std::optional<std::pair<std::string,size_t>> find_integer();
-    // std::optional<std::string> find_double();
+    std::optional<std::pair<std::string,size_t>> find_double();
 
 public:
     StringReader(std::string& origin);
     char read_char();
     int read_int();
     long read_long();
+    long long read_llong();
+    double read_double();
 };

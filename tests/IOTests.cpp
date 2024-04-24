@@ -28,9 +28,30 @@ TEST(StringReader, readInt) {
 }
 
 TEST(StringReader, tryToReadLongIntoInt) {
-    std::string s = "18446744073709551615";
+    std::string s = "223372036854775807";
     StringReader r = StringReader { s };
     EXPECT_THROW(r.read_int(), std::out_of_range);
+}
+
+TEST(StringReader, ReadLongLong) {
+    std::string s = "223372036854775807";
+    StringReader r = StringReader { s };
+    EXPECT_EQ(223372036854775807, r.read_llong());
+}
+
+TEST(StringReader, ReadDouble) {
+    std::string s = "182.2";
+    StringReader r = StringReader { s };
+    EXPECT_EQ(182.2, r.read_double());
+}
+
+TEST(StringReader, TrickyDouble) {
+    std::string s = "182.2.3.1415";
+    StringReader r = StringReader { s };
+    EXPECT_EQ(182.2, r.read_double());
+    EXPECT_THROW(r.read_double(), std::invalid_argument);
+    EXPECT_EQ('.', r.read_char());
+    EXPECT_EQ(3.1415, r.read_double());
 }
 
 TEST(StringReader, eof) {
@@ -48,7 +69,7 @@ TEST(StringReader, readChar) {
     EXPECT_EQ('c', r.read_char());
     EXPECT_EQ('h', r.read_char());
     EXPECT_TRUE(r.eof());
-    // EXPECT_THROW(r.read_char(), std::invalid_argument);
+    EXPECT_THROW(r.read_char(), std::invalid_argument);
 }
 
 int main() {

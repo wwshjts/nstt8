@@ -41,7 +41,44 @@ std::optional<std::pair<std::string, size_t>>StringReader::find_integer() {
         cnt++;
     }
 
-    while ((cnt < origin_.size()) && isdigit(origin_[start + cnt])) {
+    while ((start + cnt < origin_.size()) && isdigit(origin_[start + cnt])) {
+        cnt++;
+    }
+
+    if ((cnt == 1) && sign) {
+        return std::nullopt;
+    }
+    
+    return std::optional<std::pair<std::string, size_t>>{ std::pair<std::string, size_t>{origin_.substr(start, cnt), spaces + cnt}};
+}
+
+std::optional<std::pair<std::string, size_t>>StringReader::find_double() {
+    // skip spaces
+    size_t spaces = 0;
+    while (origin_[pos_ + spaces] == ' ') {
+        spaces++;
+    }
+
+    size_t start = pos_ + spaces;
+    size_t cnt = 0;
+    int dots = 0;
+    bool sign = false;
+    if ( (origin_[start] == '-') || (origin_[start] == '+')) {
+        sign = true;
+        cnt++;
+    }
+
+    if (origin_[start + cnt] == '.') {
+        return std::nullopt;        
+    }
+
+    while ((start + cnt < origin_.size()) && (isdigit(origin_[start + cnt]) || (origin_[start + cnt] == '.'))) {
+        if (origin_[start + cnt] == '.') {
+            dots++;
+        } 
+        if (dots > 1) {
+            break;
+        }
         cnt++;
     }
 
@@ -74,4 +111,29 @@ long StringReader::read_long() {
     }
     pos_ += finded->second;
     return std::stol(finded->first);
+}
+
+long long  StringReader::read_llong() {
+    if (eof()) {
+        throw std::invalid_argument{ "EOF reached" };
+    }
+    std::optional<std::pair<std::string, size_t>> finded = find_integer();
+    if (!finded) {
+        throw std::invalid_argument{ "Can't read integer from string" + std::to_string(pos_) };
+    }
+    pos_ += finded->second;
+    return std::stoll(finded->first);
+}
+
+double StringReader::read_double() {
+    if (eof()) {
+        throw std::invalid_argument{ "EOF reached" };
+    }
+    
+    std::optional<std::pair<std::string, size_t>> finded = find_double();
+    if (!finded) {
+        throw std::invalid_argument{ "Can't read integer from string" + std::to_string(pos_) };
+    }
+    pos_ += finded->second;
+    return std::stod(finded->first);
 }
