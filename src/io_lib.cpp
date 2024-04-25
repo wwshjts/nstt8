@@ -29,7 +29,8 @@ char StringReader::read_char() {
 std::optional<std::pair<std::string, size_t>>StringReader::find_integer() {
     // skip spaces
     size_t spaces = 0;
-    while (origin_[pos_ + spaces] == ' ') {
+    
+    while ((origin_[pos_ + spaces] == ' ') && (pos_ + spaces < origin_.size())) {
         spaces++;
     }
 
@@ -55,7 +56,7 @@ std::optional<std::pair<std::string, size_t>>StringReader::find_integer() {
 std::optional<std::pair<std::string, size_t>>StringReader::find_double() {
     // skip spaces
     size_t spaces = 0;
-    while (origin_[pos_ + spaces] == ' ') {
+    while ((origin_[pos_ + spaces] == ' ') && (pos_ + spaces < origin_.size())) {
         spaces++;
     }
 
@@ -136,4 +137,37 @@ double StringReader::read_double() {
     }
     pos_ += finded->second;
     return std::stod(finded->first);
+}
+
+void StringReader::read_word(std::string& to) {
+    if (eof()) {
+        throw std::invalid_argument{ "EOF reached" };
+    }
+    size_t spaces = 0;
+    while ((pos_ + spaces < origin_.size()) && isspace(origin_[pos_ + spaces])) {
+        spaces++;
+    }
+
+    size_t cnt = 0;
+    size_t start = pos_ + spaces;
+    while ((pos_ + cnt < origin_.size()) && ('!' <= origin_[pos_ + cnt]) && ( origin_[pos_ + cnt]<= '~')) {
+        to.push_back(origin_[pos_ + cnt]);
+        cnt++;
+    }
+
+    pos_ += spaces + cnt;
+}
+
+StringWriter::StringWriter(std::string& dst) : IOString {dst} {}
+
+void StringWriter::write_char(char val) {
+    origin_.push_back(val);
+}
+
+void StringWriter::write_int(int val) {
+    origin_.append(std::to_string(val));
+}
+
+void StringWriter::write_string(const std::string &val) {
+    origin_.append(val);
 }

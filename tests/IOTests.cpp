@@ -72,6 +72,109 @@ TEST(StringReader, readChar) {
     EXPECT_THROW(r.read_char(), std::invalid_argument);
 }
 
+TEST(StringReader, readWord) {
+    std::string s = "1ch";
+    StringReader r = StringReader { s };
+    std::string ans;  
+    r.read_word(ans);
+    EXPECT_EQ(s, ans);
+    EXPECT_TRUE(r.eof());
+    EXPECT_THROW(r.read_word(ans), std::invalid_argument);
+}
+
+TEST(StringWriter, writeInt) {
+    std::string s;
+    StringWriter w = StringWriter(s);
+    w.write_int(42);
+    EXPECT_EQ("42", s);
+}
+
+TEST(StringWriter, writeString) {
+    std::string s;
+    StringWriter w = StringWriter(s);
+    w.write_string("why we still here?");
+    EXPECT_EQ("why we still here?", s);
+}
+
+TEST(StringReaderWriter, Uh) {
+    std::string s;
+    std::string res;
+    StringReaderWriter uh = StringReaderWriter{s};
+    uh.write_int(42);
+    uh.write_string(" sh");
+    EXPECT_EQ(42, uh.read_int());
+}
+
+IOFile::IOFile(const std::string& file_name) : file_name_ { file_name } {
+    file_ = fopen(file_name_.c_str(), "r");
+    if (file_ == nullptr) {
+        throw std::invalid_argument(" Can't open file " + file_name_);
+    }
+}
+
+void IOFile::close() {
+    if (fclose(file_) != 0) {
+        throw std::invalid_argument("ERROR: trouble in closing file " + file_name_);
+    }
+    is_closed_ = true;
+}
+
+bool IOFile::is_closed() const {
+    return is_closed_;
+}
+
+bool IOFile::eof() const {
+    return feof(file_);
+}
+
+IOFileReader::IOFileReader(const std::string& origin) : IOFile(origin) {};
+
+char IOFileReader::read_char() {
+    return getc(file_);    
+}
+
+int IOFileReader::read_int() {
+    int res;
+    fscanf(file_, "%d", &res);
+    return res;
+}
+
+long IOFileReader::read_long() {
+    long res;
+    fscanf(file_, "%ld", &res);
+    return res;
+}
+
+long long IOFileReader::read_llong() {
+    long long res;
+    fscanf(file_, "%lld", &res);
+    return res;
+}
+
+double IOFileReader::read_double() {
+    double res;    
+    fscanf(file_, "%lf", &res);
+    return res;
+}
+
+void IOFileReader::read_word(std::string& to) {
+    char* str;
+    fscanf(file_, "%s", str);
+    to.append(str);
+}
+
+void IOFileWriter::write_char(char val) {
+    fprintf(file_, "%c", val);
+}
+
+void IOFileWriter::write_int(int val) {
+    fprintf(file_, "%d", val);
+}
+
+void IOFileWriter::write_string(const std::string& val) {
+    fprintf(file_, "%s", val.c_str());
+}
+
 int main() {
     testing::InitGoogleTest();
     return RUN_ALL_TESTS();
